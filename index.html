@@ -1,0 +1,863 @@
+﻿<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Последняя минута смены</title>
+  <style>
+    :root {
+      --bg: #edf2f7;
+      --panel: #ffffff;
+      --line: #d5deea;
+      --text: #1f2a3a;
+      --muted: #526176;
+      --primary: #1e6ad7;
+      --primary-hover: #1755ad;
+      --ok-bg: #e8f7ef;
+      --ok-text: #1b6f43;
+      --bad-bg: #fff0ed;
+      --bad-text: #9b382f;
+      --warn: #c7392f;
+      --shadow: 0 14px 34px rgba(18, 39, 76, 0.12);
+      --radius: 14px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: radial-gradient(circle at top left, #f6f9ff 0%, var(--bg) 58%);
+      font-family: "Segoe UI", "Noto Sans", Arial, sans-serif;
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .app {
+      width: min(1100px, 94%);
+      margin: 0 auto;
+      padding: 24px 0 34px;
+    }
+
+    .screen {
+      display: none;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 22px;
+    }
+
+    .screen.active { display: block; }
+
+    h1, h2, h3, p { margin: 0; }
+
+    .start-title { font-size: clamp(1.6rem, 4vw, 2.2rem); }
+    .subtitle { margin-top: 8px; color: var(--muted); }
+    .start-copy { margin-top: 20px; color: var(--muted); white-space: pre-line; }
+
+    .rule-box {
+      margin-top: 18px;
+      border-left: 5px solid var(--primary);
+      background: #edf4ff;
+      padding: 12px 14px;
+      border-radius: 10px;
+      color: #23497d;
+      white-space: pre-line;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 10px;
+      background: var(--primary);
+      color: #fff;
+      padding: 11px 16px;
+      font-size: 0.97rem;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+
+    .btn:hover { background: var(--primary-hover); }
+
+    .start-actions { margin-top: 18px; }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 14px;
+      align-items: center;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px;
+      background: #f7faff;
+    }
+
+    .topbar-left h2 { font-size: clamp(1.2rem, 2vw, 1.45rem); }
+    .stats {
+      margin-top: 8px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 0.94rem;
+    }
+
+    .stat-chip {
+      border: 1px solid var(--line);
+      background: #fff;
+      border-radius: 999px;
+      padding: 4px 10px;
+    }
+
+    .timer {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #183a6b;
+      border: 1px solid #bdd1f2;
+      background: #eaf2ff;
+      border-radius: 10px;
+      padding: 8px 12px;
+      min-width: 128px;
+      text-align: center;
+    }
+
+    .timer.low {
+      color: #fff;
+      background: var(--warn);
+      border-color: var(--warn);
+      animation: pulse 0.7s infinite alternate;
+    }
+
+    @keyframes pulse {
+      from { transform: scale(1); }
+      to { transform: scale(1.03); }
+    }
+
+    .desk {
+      margin-top: 14px;
+      border: 1px solid #c9d5e5;
+      border-radius: 14px;
+      background: linear-gradient(180deg, #fefefe 0%, #f4f8ff 100%);
+      padding: 14px;
+    }
+
+    .monitor {
+      border: 1px solid #bbcadf;
+      border-radius: 12px;
+      background: #ffffff;
+      min-height: 260px;
+      padding: 14px;
+      box-shadow: inset 0 0 0 1px #eff4fb;
+    }
+
+    .monitor-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 10px;
+      margin-bottom: 12px;
+      font-size: 0.95rem;
+    }
+
+    .monitor-body p { margin-top: 10px; color: var(--muted); }
+    .monitor-body .quote {
+      margin-top: 12px;
+      padding: 10px;
+      border-radius: 10px;
+      background: #f4f8ff;
+      color: #24466e;
+      border: 1px solid #d6e2f5;
+      font-weight: 600;
+    }
+
+    .answers {
+      margin-top: 14px;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .answer-btn {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+      color: var(--text);
+      padding: 10px;
+      text-align: left;
+      cursor: pointer;
+      font-size: 0.95rem;
+      transition: 0.12s;
+    }
+
+    .answer-btn:hover { border-color: var(--primary); }
+    .answer-btn:disabled { opacity: 0.8; cursor: default; }
+
+    .answer-btn.correct {
+      background: var(--ok-bg);
+      border-color: #7fc29d;
+      color: var(--ok-text);
+    }
+
+    .answer-btn.wrong {
+      background: var(--bad-bg);
+      border-color: #e0a39c;
+      color: var(--bad-text);
+    }
+
+    .feedback {
+      margin-top: 12px;
+      border-radius: 10px;
+      padding: 11px;
+      font-weight: 600;
+      min-height: 48px;
+      border: 1px solid transparent;
+    }
+
+    .feedback.ok {
+      background: var(--ok-bg);
+      color: var(--ok-text);
+      border-color: #a8dbbf;
+    }
+
+    .feedback.bad {
+      background: var(--bad-bg);
+      color: var(--bad-text);
+      border-color: #efb6ae;
+    }
+
+    .utility {
+      margin-top: 12px;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .ghost-btn {
+      border: 1px solid var(--line);
+      background: #fff;
+      color: #24466e;
+      border-radius: 10px;
+      padding: 9px 13px;
+      cursor: pointer;
+    }
+
+    .ghost-btn:hover { border-color: var(--primary); color: var(--primary); }
+
+    .result-grid {
+      margin-top: 12px;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .result-card {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px;
+      background: #f8fbff;
+    }
+
+    .result-card p:first-child {
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    .result-card p:last-child {
+      margin-top: 6px;
+      font-weight: 700;
+      font-size: 1.15rem;
+    }
+
+    .result-note {
+      margin-top: 14px;
+      border-left: 4px solid var(--primary);
+      background: #edf4ff;
+      border-radius: 10px;
+      padding: 12px;
+      color: #264f88;
+      font-weight: 600;
+    }
+
+    .errors {
+      margin-top: 16px;
+      border-top: 1px solid var(--line);
+      padding-top: 12px;
+    }
+
+    .error-item {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px;
+      background: #fff;
+      margin-top: 10px;
+    }
+
+    .error-item p + p { margin-top: 6px; color: var(--muted); }
+
+    .result-actions {
+      margin-top: 16px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(15, 25, 41, 0.5);
+      padding: 16px;
+      z-index: 99;
+    }
+
+    .modal.open { display: flex; }
+
+    .modal-card {
+      width: min(760px, 96%);
+      background: #fff;
+      border-radius: 12px;
+      padding: 18px;
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+    }
+
+    .rules-list {
+      margin-top: 12px;
+      padding-left: 20px;
+      color: var(--muted);
+    }
+
+    .rules-list li + li { margin-top: 8px; }
+
+    .modal-actions { margin-top: 16px; }
+
+    @media (max-width: 860px) {
+      .answers { grid-template-columns: 1fr; }
+      .result-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 560px) {
+      .screen { padding: 14px; }
+      .topbar { grid-template-columns: 1fr; }
+      .timer { justify-self: start; }
+      .result-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section id="start-screen" class="screen active">
+      <h1 class="start-title">Последняя минута смены</h1>
+      <p class="subtitle">Тренажёр выбора причин отмены заказа для специалиста колл-центра</p>
+      <p class="start-copy">Вы — специалист колл-центра. До конца рабочего дня осталась 1 минута.
+Обработайте клиентские отмены и выберите правильные причины в 1С.</p>
+      <p class="rule-box">Главное правило: сначала ищем точную причину.
+Причину «Клиент, отказ/перенос» выбираем только тогда, когда более точной причины нет.</p>
+      <div class="start-actions">
+        <button class="btn" id="start-btn" type="button">Начать смену</button>
+      </div>
+    </section>
+
+    <section id="game-screen" class="screen" aria-live="polite">
+      <div class="topbar">
+        <div class="topbar-left">
+          <h2>Последняя минута смены</h2>
+          <div class="stats">
+            <span class="stat-chip">Обработано: <strong id="processed-count">0</strong></span>
+            <span class="stat-chip">Верно: <strong id="correct-count">0</strong></span>
+          </div>
+        </div>
+        <div id="timer" class="timer">Осталось: 01:00</div>
+      </div>
+
+      <div class="desk">
+        <div class="monitor">
+          <div class="monitor-head">
+            <span>Заказ № <strong id="order-number">-</strong></span>
+            <span>Тип: <strong id="order-type">-</strong></span>
+          </div>
+          <div class="monitor-body">
+            <p><strong>Клиент:</strong></p>
+            <p id="client-quote" class="quote">—</p>
+            <p><strong>Ситуация:</strong> <span id="case-description">—</span></p>
+            <p><strong>Что выбрать в 1С?</strong></p>
+          </div>
+          <div id="answers" class="answers"></div>
+          <div id="feedback" class="feedback" aria-live="assertive"></div>
+        </div>
+      </div>
+
+      <div class="utility">
+        <button id="rules-btn" class="ghost-btn" type="button">Памятка</button>
+      </div>
+    </section>
+
+    <section id="result-screen" class="screen">
+      <h2>Смена завершена</h2>
+      <div class="result-grid">
+        <div class="result-card"><p>Обработано кейсов</p><p id="res-processed">0</p></div>
+        <div class="result-card"><p>Правильных ответов</p><p id="res-correct">0</p></div>
+        <div class="result-card"><p>Ошибок</p><p id="res-errors">0</p></div>
+        <div class="result-card"><p>Точность</p><p id="res-accuracy">0%</p></div>
+      </div>
+      <p id="res-text" class="result-note"></p>
+
+      <div class="errors">
+        <h3>Ошибки смены</h3>
+        <div id="errors-list"></div>
+      </div>
+
+      <div class="result-actions">
+        <button id="retry-btn" class="btn" type="button">Пройти ещё раз</button>
+        <button id="back-btn" class="ghost-btn" type="button">Вернуться к правилам</button>
+      </div>
+    </section>
+  </main>
+
+  <div id="rules-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="rules-title">
+    <div class="modal-card">
+      <h3 id="rules-title">Как выбрать клиентскую причину отмены</h3>
+      <ol class="rules-list">
+        <li>Если есть дубль, замена товара или переоформление — Клиент, повторный заказ.</li>
+        <li>Если клиент сомневается или товар не подошёл — Клиент, не определился с выбором товара.</li>
+        <li>Если клиент выбрал один товар из нескольких на ПВЗ — Клиент, товар на выбор.</li>
+        <li>Если клиент нашёл товар дешевле — Клиент, нашли дешевле.</li>
+        <li>Если клиент уже купил товар — Клиент, уже купили.</li>
+        <li>Если клиент не может оплатить — Клиент, нет оплаты/денег.</li>
+        <li>Если связаться с клиентом не получается при верных данных — Клиент, недозвон/недостук.</li>
+        <li>Если более точной причины нет — Клиент, отказ/перенос.</li>
+      </ol>
+      <div class="modal-actions">
+        <button id="close-rules-btn" class="btn" type="button">Закрыть памятку</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Данные кейсов игры
+    const gameCases = [
+      {
+        id: 1,
+        type: "онлайн-заказ",
+        quote: "Я случайно оформил два одинаковых заказа. Один оставьте, второй удалите.",
+        description: "У клиента есть дубль заказа на тот же товар.",
+        options: ["Клиент, повторный заказ", "Клиент, отказ/перенос", "Клиент, не определился с выбором товара", "Клиент, уже купили"],
+        correct: "Клиент, повторный заказ",
+        explanation: "Клиент оформил одинаковые заказы, поэтому выбираем причину «Клиент, повторный заказ»."
+      },
+      {
+        id: 2,
+        type: "заказ товара",
+        quote: "Удалите заказ. Я ещё посмотрю другие модели, пока не уверен, что эта подходит.",
+        description: "Клиент сомневается в выборе товара.",
+        options: ["Клиент, не определился с выбором товара", "Клиент, повторный заказ", "Клиент, отказ/перенос", "Клиент, нашли дешевле"],
+        correct: "Клиент, не определился с выбором товара",
+        explanation: "Клиент сомневается и будет выбирать дальше. Это причина «Клиент, не определился с выбором товара»."
+      },
+      {
+        id: 3,
+        type: "доставка",
+        quote: "Я уезжаю в командировку, принять заказ не смогу. Давайте отменим.",
+        description: "Клиент сам отказывается из-за личных обстоятельств.",
+        options: ["Клиент, отказ/перенос", "Клиент, уже купили", "Клиент, нашли дешевле", "Клиент, нет оплаты/денег"],
+        correct: "Клиент, отказ/перенос",
+        explanation: "Более точной причины нет, поэтому выбираем «Клиент, отказ/перенос»."
+      },
+      {
+        id: 4,
+        type: "ПВЗ",
+        quote: "Я заказал три модели на пункт выдачи, одну забрал, остальные не нужны.",
+        description: "Клиент выбрал один товар из нескольких на ПВЗ.",
+        options: ["Клиент, товар на выбор", "Клиент, повторный заказ", "Клиент, отказ/перенос", "Клиент, уже купили"],
+        correct: "Клиент, товар на выбор",
+        explanation: "Если клиент оформил несколько товаров на ПВЗ, выбрал один и отказался от остальных, выбираем «Клиент, товар на выбор»."
+      },
+      {
+        id: 5,
+        type: "онлайн-заказ",
+        quote: "В другом магазине этот товар дешевле. Ваш заказ отменяйте.",
+        description: "Клиент нашёл товар дешевле у конкурента.",
+        options: ["Клиент, нашли дешевле", "Клиент, уже купили", "Клиент, отказ/перенос", "Клиент, не определился с выбором товара"],
+        correct: "Клиент, нашли дешевле",
+        explanation: "Клиент прямо сообщает, что нашёл товар дешевле. Выбираем «Клиент, нашли дешевле»."
+      },
+      {
+        id: 6,
+        type: "доставка",
+        quote: "Спасибо, уже купили. Заказ больше не нужен.",
+        description: "Клиент сообщает, что товар уже куплен, но не уточняет где.",
+        options: ["Клиент, уже купили", "Клиент, нашли дешевле", "Клиент, отказ/перенос", "Клиент, повторный заказ"],
+        correct: "Клиент, уже купили",
+        explanation: "Если клиент уже купил товар и мы не знаем, где именно, выбираем «Клиент, уже купили»."
+      },
+      {
+        id: 7,
+        type: "онлайн-оплата",
+        quote: "Оплата не прошла. Я лучше потом заново оформлю заказ.",
+        description: "По онлайн-заказу не прошла оплата.",
+        options: ["Клиент, нет оплаты/денег", "Клиент, повторный заказ", "Клиент, отказ/перенос", "Клиент, аннулировал заявку"],
+        correct: "Клиент, нет оплаты/денег",
+        explanation: "Если по онлайн-заказу не прошла оплата, выбираем «Клиент, нет оплаты/денег»."
+      },
+      {
+        id: 8,
+        type: "телефонное подтверждение",
+        quote: "Клиент не отвечает на звонки.",
+        description: "Контактные данные указаны верно, но связаться с клиентом не получается.",
+        options: ["Клиент, недозвон/недостук", "Клиент, отказ/перенос", "21 век, ошибка в контактных данных клиента", "Клиент, уже купили"],
+        correct: "Клиент, недозвон/недостук",
+        explanation: "Если данные указаны верно, но связаться с клиентом не получается, выбираем «Клиент, недозвон/недостук»."
+      },
+      {
+        id: 9,
+        type: "Оплата Частями",
+        quote: "Мне сказали, что по условиям я не подхожу. Удалите заказ.",
+        description: "Клиент не подходит под условия банка.",
+        options: ["Клиент, не соответствует банку", "Клиент, аннулировал заявку", "Клиент, нет оплаты/денег", "Клиент, отказ/перенос"],
+        correct: "Клиент, не соответствует банку",
+        explanation: "Если выяснилось, что клиент не подходит по условиям банка, выбираем «Клиент, не соответствует банку»."
+      },
+      {
+        id: 10,
+        type: "Оплата Частями",
+        quote: "Заявка ещё рассматривается, но я уже передумал ждать. Отмените заказ.",
+        description: "Заявка по Оплате Частями находится на рассмотрении, но клиент отказывается.",
+        options: ["Клиент, аннулировал заявку", "Клиент, не соответствует банку", "Клиент, отказ/перенос", "Клиент, нет оплаты/денег"],
+        correct: "Клиент, аннулировал заявку",
+        explanation: "Если заявка по Оплате Частями ещё на рассмотрении, но клиент отказывается, выбираем «Клиент, аннулировал заявку»."
+      },
+      {
+        id: 11,
+        type: "замена товара",
+        quote: "Я выбрал другую модель. Этот товар удалите, вместо него хочу оформить другой.",
+        description: "Клиент меняет товар в заказе.",
+        options: ["Клиент, повторный заказ", "Клиент, не определился с выбором товара", "Клиент, отказ/перенос", "Клиент, уже купили"],
+        correct: "Клиент, повторный заказ",
+        explanation: "Если клиент меняет товар или выбирает другую модель, для удаляемого товара выбираем «Клиент, повторный заказ»."
+      },
+      {
+        id: 12,
+        type: "товар не подошёл",
+        quote: "Я посмотрел характеристики, эта модель мне не подходит. Удалите заказ.",
+        description: "Товар не подошёл клиенту по характеристикам.",
+        options: ["Клиент, не определился с выбором товара", "Клиент, повторный заказ", "Клиент, отказ/перенос", "Клиент, товар на выбор"],
+        correct: "Клиент, не определился с выбором товара",
+        explanation: "Если товар не подошёл по характеристикам, выбираем «Клиент, не определился с выбором товара»."
+      },
+      {
+        id: 13,
+        type: "случайное оформление",
+        quote: "Я случайно нажал кнопку и оформил заказ. Он мне не нужен.",
+        description: "Заказ оформлен случайно.",
+        options: ["Клиент, отказ/перенос", "Клиент, повторный заказ", "Клиент, нет оплаты/денег", "Клиент, уже купили"],
+        correct: "Клиент, отказ/перенос",
+        explanation: "Случайное оформление относится к общей клиентской причине «Клиент, отказ/перенос», если более точной причины нет."
+      },
+      {
+        id: 14,
+        type: "подарок",
+        quote: "Мне уже подарили такой товар, поэтому заказ можно отменить.",
+        description: "Клиенту уже подарили товар, который он собирался купить.",
+        options: ["Клиент, отказ/перенос", "Клиент, уже купили", "Клиент, нашли дешевле", "Клиент, товар на выбор"],
+        correct: "Клиент, отказ/перенос",
+        explanation: "Если клиенту подарили товар и он сам отказывается от заказа, выбираем «Клиент, отказ/перенос»."
+      },
+      {
+        id: 15,
+        type: "переоформление",
+        quote: "Я хочу применить промокод, но в этом заказе не получается. Удалите, я оформлю заново.",
+        description: "Возникла необходимость переоформить заказ.",
+        options: ["Клиент, повторный заказ", "Клиент, отказ/перенос", "Клиент, нет оплаты/денег", "Клиент, аннулировал заявку"],
+        correct: "Клиент, повторный заказ",
+        explanation: "Если заказ нужно переоформить, например для применения промокода, выбираем «Клиент, повторный заказ»."
+      }
+    ];
+
+    // Состояние игры
+    let timeLeft = 60;
+    let timerId = null;
+    let nextCaseTimeoutId = null;
+    let processed = 0;
+    let correct = 0;
+    let currentCase = null;
+    let caseQueue = [];
+    let lastCaseId = null;
+    let answeredLocked = false;
+    let isRulesOpen = false;
+    const mistakes = [];
+
+    // DOM-элементы
+    const screens = {
+      start: document.getElementById("start-screen"),
+      game: document.getElementById("game-screen"),
+      result: document.getElementById("result-screen")
+    };
+
+    const timerEl = document.getElementById("timer");
+    const processedEl = document.getElementById("processed-count");
+    const correctEl = document.getElementById("correct-count");
+    const orderNumberEl = document.getElementById("order-number");
+    const orderTypeEl = document.getElementById("order-type");
+    const quoteEl = document.getElementById("client-quote");
+    const descriptionEl = document.getElementById("case-description");
+    const answersEl = document.getElementById("answers");
+    const feedbackEl = document.getElementById("feedback");
+    const rulesModal = document.getElementById("rules-modal");
+
+    function showScreen(name) {
+      Object.values(screens).forEach((screen) => screen.classList.remove("active"));
+      screens[name].classList.add("active");
+    }
+
+    function formatTimer(seconds) {
+      const mm = String(Math.floor(seconds / 60)).padStart(2, "0");
+      const ss = String(seconds % 60).padStart(2, "0");
+      return `${mm}:${ss}`;
+    }
+
+    function shuffle(items) {
+      const copy = [...items];
+      for (let i = copy.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function buildQueue() {
+      const shuffled = shuffle(gameCases);
+      if (shuffled.length > 1 && shuffled[0].id === lastCaseId) {
+        [shuffled[0], shuffled[1]] = [shuffled[1], shuffled[0]];
+      }
+      caseQueue = shuffled;
+    }
+
+    // startGame()
+    function startGame() {
+      timeLeft = 60;
+      processed = 0;
+      correct = 0;
+      mistakes.length = 0;
+      lastCaseId = null;
+      answeredLocked = false;
+      feedbackEl.className = "feedback";
+      feedbackEl.textContent = "";
+
+      buildQueue();
+      updateTopbar();
+      updateTimer();
+      showScreen("game");
+      renderCase();
+
+      clearInterval(timerId);
+      timerId = setInterval(() => {
+        if (isRulesOpen) return;
+        timeLeft -= 1;
+        updateTimer();
+        if (timeLeft <= 0) {
+          endGame();
+        }
+      }, 1000);
+    }
+
+    function updateTopbar() {
+      processedEl.textContent = String(processed);
+      correctEl.textContent = String(correct);
+    }
+
+    function updateTimer() {
+      timerEl.textContent = `Осталось: ${formatTimer(Math.max(0, timeLeft))}`;
+      timerEl.classList.toggle("low", timeLeft <= 10);
+    }
+
+    // renderCase()
+    function renderCase() {
+      if (timeLeft <= 0) {
+        endGame();
+        return;
+      }
+
+      if (caseQueue.length === 0) {
+        buildQueue();
+      }
+
+      currentCase = caseQueue.shift();
+      lastCaseId = currentCase.id;
+      answeredLocked = false;
+
+      orderNumberEl.textContent = String(200000 + Math.floor(Math.random() * 799999));
+      orderTypeEl.textContent = currentCase.type;
+      quoteEl.textContent = `«${currentCase.quote}»`;
+      descriptionEl.textContent = currentCase.description;
+      feedbackEl.className = "feedback";
+      feedbackEl.textContent = "";
+
+      answersEl.innerHTML = "";
+      const shuffledOptions = shuffle(currentCase.options);
+
+      shuffledOptions.forEach((option) => {
+        const button = document.createElement("button");
+        button.className = "answer-btn";
+        button.type = "button";
+        button.textContent = option;
+        button.addEventListener("click", () => handleAnswer(option, button));
+        answersEl.appendChild(button);
+      });
+    }
+
+    // handleAnswer()
+    function handleAnswer(selectedOption, selectedButton) {
+      if (answeredLocked || timeLeft <= 0) return;
+
+      answeredLocked = true;
+      processed += 1;
+      const isCorrect = selectedOption === currentCase.correct;
+      if (isCorrect) {
+        correct += 1;
+      }
+
+      const buttons = answersEl.querySelectorAll("button");
+      buttons.forEach((btn) => {
+        btn.disabled = true;
+        if (btn.textContent === currentCase.correct) {
+          btn.classList.add("correct");
+        }
+      });
+
+      if (!isCorrect) {
+        selectedButton.classList.add("wrong");
+        mistakes.push({
+          quote: currentCase.quote,
+          selected: selectedOption,
+          correct: currentCase.correct,
+          explanation: currentCase.explanation
+        });
+      }
+
+      updateTopbar();
+      showFeedback(isCorrect);
+    }
+
+    // showFeedback()
+    function showFeedback(isCorrect) {
+      if (isCorrect) {
+        feedbackEl.className = "feedback ok";
+        feedbackEl.textContent = `Верно! Причина выбрана правильно. ${currentCase.explanation}`;
+      } else {
+        feedbackEl.className = "feedback bad";
+        feedbackEl.textContent = `Не совсем так. Правильная причина: ${currentCase.correct}. ${currentCase.explanation}`;
+      }
+
+      clearTimeout(nextCaseTimeoutId);
+      nextCaseTimeoutId = setTimeout(() => {
+        if (timeLeft <= 0) {
+          endGame();
+          return;
+        }
+        if (!isRulesOpen) {
+          nextCase();
+        }
+      }, 1200);
+    }
+
+    // nextCase()
+    function nextCase() {
+      renderCase();
+    }
+
+    // endGame()
+    function endGame() {
+      clearInterval(timerId);
+      clearTimeout(nextCaseTimeoutId);
+      timerId = null;
+      nextCaseTimeoutId = null;
+      isRulesOpen = false;
+      rulesModal.classList.remove("open");
+
+      const errorsCount = processed - correct;
+      const accuracy = processed === 0 ? 0 : Math.round((correct / processed) * 100);
+
+      document.getElementById("res-processed").textContent = String(processed);
+      document.getElementById("res-correct").textContent = String(correct);
+      document.getElementById("res-errors").textContent = String(errorsCount);
+      document.getElementById("res-accuracy").textContent = `${accuracy}%`;
+
+      const resText = document.getElementById("res-text");
+      if (accuracy >= 90) {
+        resText.textContent = "Отличная работа. Вы уверенно выбираете точные причины отмены.";
+      } else if (accuracy >= 70) {
+        resText.textContent = "Хороший результат. В целом логика понятна, но стоит повторить похожие причины.";
+      } else if (accuracy >= 50) {
+        resText.textContent = "Базовая логика освоена частично. Рекомендуется повторить справочник и ещё раз пройти тренажёр.";
+      } else {
+        resText.textContent = "Стоит вернуться к памятке: сначала выбираем точную причину, и только если её нет — общую.";
+      }
+
+      const errorsList = document.getElementById("errors-list");
+      errorsList.innerHTML = "";
+      if (mistakes.length === 0) {
+        const okText = document.createElement("p");
+        okText.textContent = "Ошибок нет. Все причины выбраны корректно.";
+        errorsList.appendChild(okText);
+      } else {
+        mistakes.forEach((mistake) => {
+          const wrap = document.createElement("article");
+          wrap.className = "error-item";
+          wrap.innerHTML = `
+            <p><strong>Ситуация:</strong> ${mistake.quote}</p>
+            <p><strong>Выбрано:</strong> ${mistake.selected}</p>
+            <p><strong>Правильный ответ:</strong> ${mistake.correct}</p>
+            <p><strong>Пояснение:</strong> ${mistake.explanation}</p>
+          `;
+          errorsList.appendChild(wrap);
+        });
+      }
+
+      showScreen("result");
+    }
+
+    // restartGame()
+    function restartGame() {
+      startGame();
+    }
+
+    // openRules()
+    function openRules() {
+      if (!screens.game.classList.contains("active")) return;
+      isRulesOpen = true;
+      rulesModal.classList.add("open");
+    }
+
+    // closeRules()
+    function closeRules() {
+      isRulesOpen = false;
+      rulesModal.classList.remove("open");
+      if (screens.game.classList.contains("active") && answeredLocked && timeLeft > 0) {
+        clearTimeout(nextCaseTimeoutId);
+        nextCaseTimeoutId = setTimeout(() => {
+          if (!isRulesOpen && timeLeft > 0) {
+            nextCase();
+          }
+        }, 250);
+      }
+    }
+
+    document.getElementById("start-btn").addEventListener("click", startGame);
+    document.getElementById("retry-btn").addEventListener("click", restartGame);
+    document.getElementById("back-btn").addEventListener("click", () => {
+      showScreen("start");
+    });
+    document.getElementById("rules-btn").addEventListener("click", openRules);
+    document.getElementById("close-rules-btn").addEventListener("click", closeRules);
+
+    rulesModal.addEventListener("click", (event) => {
+      if (event.target === rulesModal) {
+        closeRules();
+      }
+    });
+  </script>
+</body>
+</html>

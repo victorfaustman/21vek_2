@@ -1,0 +1,733 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Причины отмены по инициативе клиента</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --surface: #ffffff;
+      --surface-muted: #f9fbff;
+      --text: #1f2937;
+      --text-secondary: #4b5563;
+      --border: #d9e2f1;
+      --accent: #1456b8;
+      --accent-hover: #0e4698;
+      --ok-bg: #e9f9ef;
+      --ok-border: #34a853;
+      --bad-bg: #fff3e8;
+      --bad-border: #f2994a;
+      --shadow: 0 10px 28px rgba(17, 24, 39, 0.08);
+      --radius: 14px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Tahoma", "Verdana", sans-serif;
+      background: radial-gradient(circle at top, #ffffff 0%, var(--bg) 60%);
+      color: var(--text);
+      line-height: 1.55;
+    }
+
+    .container {
+      width: min(980px, 92vw);
+      margin: 0 auto;
+      padding: 28px 0 42px;
+    }
+
+    .hero,
+    .card,
+    .rule,
+    .memo,
+    .quiz,
+    .footer-note {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .hero {
+      padding: 28px;
+      margin-bottom: 18px;
+      background: linear-gradient(135deg, #ffffff 0%, #f6f9ff 100%);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.6rem, 2.7vw, 2.2rem);
+      line-height: 1.2;
+    }
+
+    .subtitle {
+      margin-top: 8px;
+      font-size: 1rem;
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+
+    .lead {
+      margin-top: 14px;
+      color: var(--text-secondary);
+      max-width: 75ch;
+    }
+
+    .rule {
+      margin-bottom: 20px;
+      padding: 20px;
+      border-left: 6px solid var(--accent);
+      background: #f1f6ff;
+    }
+
+    .rule h2,
+    .section-title,
+    .memo h2,
+    .quiz h2 {
+      margin: 0 0 10px;
+      font-size: 1.2rem;
+    }
+
+    .section-title {
+      margin-bottom: 12px;
+      font-size: 1.35rem;
+    }
+
+    .guide-list {
+      display: grid;
+      gap: 12px;
+      margin-bottom: 22px;
+    }
+
+    .card {
+      overflow: hidden;
+    }
+
+    .card-btn {
+      width: 100%;
+      text-align: left;
+      border: 0;
+      background: #ffffff;
+      color: var(--text);
+      padding: 16px 18px;
+      font-weight: 700;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+    }
+
+    .card-btn:hover {
+      background: #f8fbff;
+    }
+
+    .chevron {
+      font-size: 1.25rem;
+      color: var(--accent);
+      transition: transform 0.2s ease;
+      margin-left: 14px;
+      flex-shrink: 0;
+    }
+
+    .card.open .chevron {
+      transform: rotate(45deg);
+    }
+
+    .card-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.26s ease;
+      border-top: 1px solid transparent;
+      background: var(--surface-muted);
+    }
+
+    .card.open .card-content {
+      border-top-color: var(--border);
+      max-height: 500px;
+    }
+
+    .card-inner {
+      padding: 16px 18px;
+    }
+
+    .card-inner p {
+      margin: 0 0 10px;
+      color: var(--text-secondary);
+    }
+
+    .card-inner p:last-child {
+      margin-bottom: 0;
+    }
+
+    .memo {
+      padding: 20px;
+      margin-bottom: 22px;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+      min-width: 650px;
+    }
+
+    th,
+    td {
+      border: 1px solid var(--border);
+      text-align: left;
+      padding: 11px 12px;
+      vertical-align: top;
+    }
+
+    th {
+      background: #eef4ff;
+      font-weight: 700;
+    }
+
+    .memo-note {
+      margin-top: 12px;
+      padding: 12px 14px;
+      border-left: 5px solid var(--accent);
+      background: #f2f7ff;
+      border-radius: 10px;
+      font-weight: 600;
+    }
+
+    .quiz {
+      padding: 22px;
+      margin-bottom: 20px;
+    }
+
+    .quiz-meta {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      margin-bottom: 10px;
+    }
+
+    .scenario {
+      background: #f8fbff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 14px;
+      color: var(--text-secondary);
+    }
+
+    .question {
+      margin: 0 0 14px;
+      font-size: 1.05rem;
+      font-weight: 700;
+    }
+
+    .options {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .option {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 11px 12px;
+      cursor: pointer;
+      background: #fff;
+      transition: border-color 0.15s ease, background-color 0.15s ease;
+    }
+
+    .option:hover {
+      border-color: #90addf;
+      background: #f8fbff;
+    }
+
+    .option input {
+      margin-right: 9px;
+    }
+
+    .btn {
+      border: 0;
+      border-radius: 10px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.95rem;
+      font-weight: 700;
+      padding: 10px 15px;
+      cursor: pointer;
+      transition: background-color 0.15s ease;
+    }
+
+    .btn:hover {
+      background: var(--accent-hover);
+    }
+
+    .btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .feedback {
+      display: none;
+      margin: 14px 0;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid;
+      font-weight: 600;
+    }
+
+    .feedback.ok {
+      display: block;
+      background: var(--ok-bg);
+      border-color: var(--ok-border);
+      color: #1e6b39;
+    }
+
+    .feedback.bad {
+      display: block;
+      background: var(--bad-bg);
+      border-color: var(--bad-border);
+      color: #8d4e07;
+    }
+
+    .result {
+      display: none;
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: #f7fbff;
+      margin-top: 10px;
+    }
+
+    .result h3 {
+      margin: 0 0 8px;
+      font-size: 1.1rem;
+    }
+
+    .result p {
+      margin: 6px 0;
+      color: var(--text-secondary);
+    }
+
+    .footer-note {
+      padding: 14px 16px;
+      text-align: center;
+      color: var(--text-secondary);
+      font-size: 0.93rem;
+    }
+
+    @media (max-width: 700px) {
+      .container {
+        width: min(100%, 95vw);
+      }
+
+      .hero,
+      .quiz,
+      .memo,
+      .rule {
+        padding: 16px;
+      }
+
+      .card-btn {
+        padding: 14px;
+      }
+
+      .card-inner {
+        padding: 14px;
+      }
+
+      .btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <section class="hero">
+      <h1>Причины отмены по инициативе клиента</h1>
+      <p class="subtitle">Интерактивный справочник и тренажёр для специалиста колл-центра</p>
+      <p class="lead">
+        Изучите клиентские причины отмены заказа, а затем проверьте себя на мини-кейсах.
+        Главное правило: сначала ищем точную причину, и только если её нет — выбираем общую.
+      </p>
+    </section>
+
+    <section class="rule">
+      <h2>Главное правило выбора причины</h2>
+      <p>
+        Если клиент сам инициирует отмену, сначала проверьте, есть ли в списке точная причина.
+        Причину «Клиент, отказ/перенос» выбираем только тогда, когда более точная причина не подходит.
+      </p>
+    </section>
+
+    <section>
+      <h2 class="section-title">Интерактивный справочник</h2>
+      <div id="guide-list" class="guide-list"></div>
+    </section>
+
+    <section class="memo">
+      <h2>Как не перепутать похожие причины</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Причина</th>
+              <th>Когда выбирать</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Клиент, повторный заказ</td>
+              <td>Есть дубль, замена товара или переоформление заказа</td>
+            </tr>
+            <tr>
+              <td>Клиент, не определился с выбором товара</td>
+              <td>Клиент сомневается или товар не подошёл по характеристикам</td>
+            </tr>
+            <tr>
+              <td>Клиент, отказ/перенос</td>
+              <td>Клиент сам отказывается, но более точной причины нет</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="memo-note">
+        Сначала ищем точную причину. Общую причину «Клиент, отказ/перенос» выбираем только в последнюю очередь.
+      </p>
+    </section>
+
+    <section class="quiz">
+      <h2>Тест-тренажёр</h2>
+      <div id="quiz-screen">
+        <p class="quiz-meta" id="quiz-meta"></p>
+        <div class="scenario" id="scenario"></div>
+        <p class="question" id="question"></p>
+        <div class="options" id="options"></div>
+        <button class="btn" id="check-btn" type="button" disabled>Проверить ответ</button>
+        <div id="feedback" class="feedback"></div>
+        <button class="btn" id="next-btn" type="button" style="display:none; margin-top: 6px;">Следующий вопрос</button>
+      </div>
+      <div id="result" class="result">
+        <h3>Результат теста</h3>
+        <p id="result-score"></p>
+        <p id="result-percent"></p>
+        <p id="result-text"></p>
+        <button class="btn" id="restart-btn" type="button" style="margin-top:10px;">Пройти ещё раз</button>
+      </div>
+    </section>
+
+    <section class="footer-note">
+      Учебный прототип разработан для демонстрации цифрового формата задания.
+    </section>
+  </main>
+
+  <script>
+    // Данные справочника
+    const guideData = [
+      {
+        title: "Клиент, не соответствует банку",
+        when: "В процессе оформления заявки выясняется, что клиент не подходит по условиям банка.",
+        example: "Клиент не подходит по возрасту, стажу, трудоустройству или документам.",
+        tip: "Используйте эту причину, если отказ связан именно с условиями банка для оформления оплаты."
+      },
+      {
+        title: "Клиент, аннулировал заявку",
+        when: "Заявка по Оплате Частями находится на рассмотрении, но клиент отказывается от заказа.",
+        example: "Ответ по заявке ещё не получен, но клиент решил не ждать и просит удалить заказ.",
+        tip: "Сначала уточните причину отказа. Если более точной причины нет, используйте эту."
+      },
+      {
+        title: "Клиент, повторный заказ",
+        when: "Клиент оформил несколько одинаковых заказов, в заказе есть дубль позиции, клиент меняет товар или нужно переоформить заказ.",
+        example: "Клиент оформил два одинаковых заказа и просит оставить только один.",
+        tip: "Если есть дубль, замена товара или переоформление — это повторный заказ."
+      },
+      {
+        title: "Клиент, не определился с выбором товара",
+        when: "Клиент сомневается в выборе товара, будет ещё выбирать или товар не подошёл по характеристикам.",
+        example: "Клиент говорит: «Я пока не уверен, что эта модель мне подходит».",
+        tip: "Если клиент не готов купить именно этот товар, потому что сомневается, выбирайте эту причину."
+      },
+      {
+        title: "Клиент, нет оплаты/денег",
+        when: "Оплата по онлайн-заказу не прошла или клиент сообщает, что сейчас не может оплатить заказ.",
+        example: "Клиент говорит, что не пришла зарплата или не хватает денег для оплаты.",
+        tip: "Используйте эту причину, если проблема именно в невозможности оплатить заказ."
+      },
+      {
+        title: "Клиент, недозвон/недостук",
+        when: "Контактные данные указаны верно, но связаться с клиентом по телефону или адресу не получается.",
+        example: "Клиент оставил корректный номер, но не отвечает на звонки.",
+        tip: "Не путайте с ошибкой в контактных данных. Здесь данные верные, но связи с клиентом нет."
+      },
+      {
+        title: "Клиент, нашли дешевле",
+        when: "Клиент нашёл или купил товар дешевле в другом магазине.",
+        example: "Клиент говорит: «В другом магазине этот товар стоит дешевле».",
+        tip: "Если клиент прямо говорит о более низкой цене у конкурента — выбирайте эту причину."
+      },
+      {
+        title: "Клиент, уже купили",
+        when: "Клиент уже купил товар в другом месте или мы не знаем, где именно он его купил.",
+        example: "Клиент говорит: «Спасибо, уже купили».",
+        tip: "Если причина не в цене, а в том, что товар уже куплен, выбирайте эту причину."
+      },
+      {
+        title: "Клиент, товар на выбор",
+        when: "Клиент оформил на ПВЗ 2–3 единицы товара, выбрал и забрал один товар, а от остальных отказался.",
+        example: "Клиент заказал три похожих товара на ПВЗ, один забрал, два отменил.",
+        tip: "Эта причина подходит именно для ситуации выбора из нескольких товаров на ПВЗ."
+      },
+      {
+        title: "Клиент, отказ/перенос",
+        when: "Клиент сам инициирует отмену, но ситуация не подходит ни к одной более точной причине.",
+        example: "Клиент уезжает в командировку и не может принять заказ.",
+        tip: "Это общая причина. Используйте её только после проверки, что точной причины нет."
+      }
+    ];
+
+    // Данные теста
+    const quizData = [
+      {
+        scenario: "Клиент оформил два одинаковых заказа на один и тот же товар. Он просит оставить один заказ, а второй отменить.",
+        question: "Какую причину отмены нужно выбрать?",
+        options: [
+          "A. Клиент, повторный заказ",
+          "B. Клиент, не определился с выбором товара",
+          "C. Клиент, отказ/перенос"
+        ],
+        correctIndex: 0,
+        feedback: "Верно. Клиент оформил дубль заказа, поэтому выбираем «Клиент, повторный заказ»."
+      },
+      {
+        scenario: "Клиент говорит: «Я пока не уверен, что эта модель мне подходит. Удалите заказ, я ещё посмотрю варианты».",
+        question: "Какую причину отмены нужно выбрать?",
+        options: [
+          "A. Клиент, повторный заказ",
+          "B. Клиент, не определился с выбором товара",
+          "C. Клиент, отказ/перенос"
+        ],
+        correctIndex: 1,
+        feedback: "Верно. Клиент сомневается в выборе товара и будет выбирать дальше. Поэтому выбираем «Клиент, не определился с выбором товара»."
+      },
+      {
+        scenario: "Клиент говорит: «Я уезжаю в командировку и не смогу принять заказ. Удалите его, пожалуйста».",
+        question: "Какую причину отмены нужно выбрать?",
+        options: [
+          "A. Клиент, отказ/перенос",
+          "B. Клиент, уже купили",
+          "C. Клиент, нашли дешевле"
+        ],
+        correctIndex: 0,
+        feedback: "Верно. Клиент сам отказывается от заказа из-за личных обстоятельств. Более точной причины нет, поэтому выбираем «Клиент, отказ/перенос»."
+      },
+      {
+        scenario: "Клиент оформил на ПВЗ три похожих товара. После получения он выбрал и забрал один товар, а от двух остальных отказался.",
+        question: "Какую причину нужно указать для товаров, от которых клиент отказался?",
+        options: [
+          "A. Клиент, товар на выбор",
+          "B. Клиент, повторный заказ",
+          "C. Клиент, отказ/перенос"
+        ],
+        correctIndex: 0,
+        feedback: "Верно. Клиент оформил несколько товаров на выбор, забрал один, а от остальных отказался. Для этих товаров выбираем «Клиент, товар на выбор»."
+      },
+      {
+        scenario: "Клиент говорит: «В другом магазине этот товар стоит дешевле, поэтому заказ отменяю».",
+        question: "Какую причину отмены нужно выбрать?",
+        options: [
+          "A. Клиент, нашли дешевле",
+          "B. Клиент, уже купили",
+          "C. Клиент, отказ/перенос"
+        ],
+        correctIndex: 0,
+        feedback: "Верно. Клиент сообщает, что нашёл товар дешевле в другом магазине. Поэтому выбираем «Клиент, нашли дешевле»."
+      },
+      {
+        scenario: "Клиент говорит: «Спасибо, товар уже купили». Где именно купили, клиент не уточняет.",
+        question: "Какую причину отмены нужно выбрать?",
+        options: [
+          "A. Клиент, уже купили",
+          "B. Клиент, нашли дешевле",
+          "C. Клиент, отказ/перенос"
+        ],
+        correctIndex: 0,
+        feedback: "Верно. Клиент сообщает, что товар уже куплен. Если мы не знаем, где именно он купил товар, выбираем «Клиент, уже купили»."
+      },
+      {
+        scenario: "По онлайн-заказу не прошла оплата. Клиента нужно направить на повторное оформление заказа.",
+        question: "Какую причину отмены нужно выбрать?",
+        options: [
+          "A. Клиент, нет оплаты/денег",
+          "B. Клиент, повторный заказ",
+          "C. Клиент, отказ/перенос"
+        ],
+        correctIndex: 0,
+        feedback: "Верно. Если по онлайн-заказу не прошла оплата, выбираем «Клиент, нет оплаты/денег»."
+      },
+      {
+        scenario: "Контактные данные указаны верно, но специалист не может связаться с клиентом по телефону.",
+        question: "Какую причину отмены нужно выбрать?",
+        options: [
+          "A. Клиент, недозвон/недостук",
+          "B. 21 век, ошибка в контактных данных клиента",
+          "C. Клиент, отказ/перенос"
+        ],
+        correctIndex: 0,
+        feedback: "Верно. Если контактные данные указаны верно, но связаться с клиентом не получается, выбираем «Клиент, недозвон/недостук»."
+      }
+    ];
+
+    // Отрисовка карточек
+    const guideList = document.getElementById("guide-list");
+
+    guideData.forEach((item) => {
+      const card = document.createElement("article");
+      card.className = "card";
+
+      card.innerHTML = `
+        <button class="card-btn" type="button" aria-expanded="false">
+          <span>${item.title}</span>
+          <span class="chevron">+</span>
+        </button>
+        <div class="card-content">
+          <div class="card-inner">
+            <p><strong>Когда использовать:</strong> ${item.when}</p>
+            <p><strong>Пример:</strong> ${item.example}</p>
+            <p><strong>Подсказка:</strong> ${item.tip}</p>
+          </div>
+        </div>
+      `;
+
+      const toggleBtn = card.querySelector(".card-btn");
+      toggleBtn.addEventListener("click", () => {
+        const isOpen = card.classList.toggle("open");
+        toggleBtn.setAttribute("aria-expanded", String(isOpen));
+      });
+
+      guideList.appendChild(card);
+    });
+
+    // Логика теста
+    const quizMeta = document.getElementById("quiz-meta");
+    const scenarioEl = document.getElementById("scenario");
+    const questionEl = document.getElementById("question");
+    const optionsEl = document.getElementById("options");
+    const checkBtn = document.getElementById("check-btn");
+    const feedbackEl = document.getElementById("feedback");
+    const nextBtn = document.getElementById("next-btn");
+    const resultBox = document.getElementById("result");
+    const quizScreen = document.getElementById("quiz-screen");
+    const resultScore = document.getElementById("result-score");
+    const resultPercent = document.getElementById("result-percent");
+    const resultText = document.getElementById("result-text");
+    const restartBtn = document.getElementById("restart-btn");
+
+    let currentQuestion = 0;
+    let correctAnswers = 0;
+    let selectedOption = null;
+    let answered = false;
+
+    function renderQuestion() {
+      const item = quizData[currentQuestion];
+      selectedOption = null;
+      answered = false;
+
+      quizMeta.textContent = `Вопрос ${currentQuestion + 1} из ${quizData.length}`;
+      scenarioEl.innerHTML = `<strong>Ситуация:</strong> ${item.scenario}`;
+      questionEl.textContent = item.question;
+      optionsEl.innerHTML = "";
+
+      item.options.forEach((optionText, index) => {
+        const label = document.createElement("label");
+        label.className = "option";
+        label.innerHTML = `
+          <input type="radio" name="quiz-option" value="${index}" />
+          ${optionText}
+        `;
+
+        label.addEventListener("click", () => {
+          if (answered) return;
+          selectedOption = index;
+          checkBtn.disabled = false;
+        });
+
+        optionsEl.appendChild(label);
+      });
+
+      feedbackEl.className = "feedback";
+      feedbackEl.textContent = "";
+      checkBtn.disabled = true;
+      nextBtn.style.display = "none";
+    }
+
+    function showResult() {
+      // Подсчёт результата
+      const total = quizData.length;
+      const percent = Math.round((correctAnswers / total) * 100);
+      let interpretation = "";
+
+      if (percent >= 80) {
+        interpretation = "Отличный результат. Вы уверенно различаете клиентские причины отмены и выбираете точную причину по ситуации.";
+      } else if (percent >= 50) {
+        interpretation = "Хороший результат, но стоит повторить справочник и обратить внимание на похожие причины.";
+      } else {
+        interpretation = "Рекомендуется ещё раз изучить справочник и повторить правило: сначала точная причина, затем общая.";
+      }
+
+      resultScore.textContent = `Правильных ответов: ${correctAnswers} из ${total}`;
+      resultPercent.textContent = `Процент: ${percent}%`;
+      resultText.textContent = interpretation;
+
+      quizScreen.style.display = "none";
+      resultBox.style.display = "block";
+    }
+
+    checkBtn.addEventListener("click", () => {
+      if (selectedOption === null || answered) return;
+
+      answered = true;
+      const item = quizData[currentQuestion];
+      const isCorrect = selectedOption === item.correctIndex;
+
+      if (isCorrect) {
+        correctAnswers += 1;
+        feedbackEl.className = "feedback ok";
+        feedbackEl.textContent = item.feedback;
+      } else {
+        feedbackEl.className = "feedback bad";
+        feedbackEl.textContent = `Неверно. Правильный ответ: ${item.options[item.correctIndex]}. ${item.feedback}`;
+      }
+
+      checkBtn.disabled = true;
+      nextBtn.style.display = "inline-block";
+    });
+
+    nextBtn.addEventListener("click", () => {
+      currentQuestion += 1;
+      if (currentQuestion < quizData.length) {
+        renderQuestion();
+      } else {
+        showResult();
+      }
+    });
+
+    restartBtn.addEventListener("click", () => {
+      currentQuestion = 0;
+      correctAnswers = 0;
+      quizScreen.style.display = "block";
+      resultBox.style.display = "none";
+      renderQuestion();
+    });
+
+    renderQuestion();
+  </script>
+</body>
+</html>

@@ -528,13 +528,38 @@
     let currentIndex = 0;
     let score = 0;
     let answered = false;
+    let quizRunQuestions = [];
+
+    function shuffleArray(items) {
+      const copy = [...items];
+      for (let i = copy.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function prepareQuizRun() {
+      const shuffledQuestions = shuffleArray(quizQuestions);
+      quizRunQuestions = shuffledQuestions.map((question) => {
+        const correctOption = question.options[question.correct];
+        const shuffledOptions = shuffleArray(question.options);
+        const newCorrectIndex = shuffledOptions.indexOf(correctOption);
+
+        return {
+          ...question,
+          options: shuffledOptions,
+          correct: newCorrectIndex
+        };
+      });
+    }
 
     function renderQuestion() {
-      const item = quizQuestions[currentIndex];
+      const item = quizRunQuestions[currentIndex];
       answered = false;
 
       quizRoot.innerHTML = `
-        <p class="quiz-meta">Вопрос ${currentIndex + 1} из ${quizQuestions.length}</p>
+        <p class="quiz-meta">Вопрос ${currentIndex + 1} из ${quizRunQuestions.length}</p>
         <p><strong>Ситуация:</strong> ${item.situation}</p>
         <p style="margin-top:10px;"><strong>Вопрос:</strong> ${item.question}</p>
         <div class="answers" id="answers"></div>
@@ -573,11 +598,11 @@
           const nextBtn = document.createElement("button");
           nextBtn.className = "next-btn";
           nextBtn.type = "button";
-          nextBtn.textContent = currentIndex === quizQuestions.length - 1 ? "Показать результат" : "Следующий вопрос";
+          nextBtn.textContent = currentIndex === quizRunQuestions.length - 1 ? "Показать результат" : "Следующий вопрос";
 
           nextBtn.addEventListener("click", () => {
             currentIndex += 1;
-            if (currentIndex < quizQuestions.length) {
+            if (currentIndex < quizRunQuestions.length) {
               renderQuestion();
             } else {
               renderResult();
@@ -593,7 +618,7 @@
 
     // Подсчёт результата
     function renderResult() {
-      const percent = Math.round((score / quizQuestions.length) * 100);
+      const percent = Math.round((score / quizRunQuestions.length) * 100);
       let interpretation = "";
 
       if (percent >= 80) {
@@ -607,7 +632,7 @@
       quizRoot.innerHTML = `
         <div class="result">
           <h3>Результат теста</h3>
-          <p><strong>Правильных ответов:</strong> ${score} из ${quizQuestions.length}</p>
+          <p><strong>Правильных ответов:</strong> ${score} из ${quizRunQuestions.length}</p>
           <p><strong>Процент:</strong> ${percent}%</p>
           <p style="margin-top:10px;">${interpretation}</p>
           <button type="button" class="restart-btn" id="restart">Пройти ещё раз</button>
@@ -617,10 +642,12 @@
       document.getElementById("restart").addEventListener("click", () => {
         currentIndex = 0;
         score = 0;
+        prepareQuizRun();
         renderQuestion();
       });
     }
 
+    prepareQuizRun();
     renderQuestion();
   </script>
 </body>
